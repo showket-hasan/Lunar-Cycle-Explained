@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lunar Cycle &amp; Orbital Mechanics 3D Lab — Grade 9 SMBP (ว 3.1 ม.3/3)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    :root {
+      --navy-deep: #0b162c;
+      --navy-academic: #1b365d;
+      --gold-solar: #c99700;
+      --gold-bright: #f59e0b;
+      --ivory-bg: #f8f7f3;
+      --card-border: #d8d5ca;
+      --ink-main: #182230;
+      --ink-muted: #4b5563;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--ivory-bg);
+      color: var(--ink-main);
+      font-family: "Times New Roman", "TH Sarabun New", "Sarabun", Georgia, serif;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Language visibility toggles */
+    body.lang-en .th-only { display: none !important; }
+    body.lang-th .en-only { display: none !important; }
+
+    /* Custom scholarly range sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--navy-academic);
+      border: 2px solid #f59e0b;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    /* 3D Viewport container */
+    #viewport3d {
+      position: relative;
+      width: 100%;
+      height: 460px;
+      background: radial-gradient(circle at 88% 50%, #241e12 0%, #0a1226 42%, #050914 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    #viewport3d:active {
+      cursor: grabbing;
+    }
+    @media (min-width: 1024px) {
+      #viewport3d {
+        height: 530px;
+      }
+    }
+
+    .academic-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(11, 22, 44, 0.05);
+    }
+
+    .phase-btn {
+      transition: all 0.18s ease;
+    }
+    .phase-btn.active {
+      background-color: var(--navy-academic);
+      color: #ffffff;
+      border-color: var(--gold-bright);
+      box-shadow: 0 2px 8px rgba(27, 54, 93, 0.28);
+    }
+    .phase-btn.active .phase-sub {
+      color: #fde68a;
+    }
+
+    .tab-btn {
+      transition: all 0.18s ease;
+      border-bottom: 3px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--navy-academic);
+      border-bottom-color: var(--gold-bright);
+      background-color: #ffffff;
+      font-weight: 700;
+    }
+
+    .toggle-pill {
+      transition: all 0.18s ease;
+    }
+    .toggle-pill.on {
+      background-color: #eef4ff;
+      border-color: #1b365d;
+      color: #1b365d;
+    }
+
+    .cam-btn.active {
+      background-color: #f59e0b;
+      color: #0b162c;
+      border-color: #fbbf24;
+      font-weight: 700;
+    }
+
+    /* Toast notification */
+    #toastBox {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+  </style>
+</head>
+<body class="lang-bilingual min-h-screen flex flex-col">
+
+  <!-- Academic Header -->
+  <header class="bg-[#0b162c] text-white border-b-4 border-[#c99700] shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#f59e0b] to-[#92400e] flex items-center justify-center shrink-0 shadow-inner border border-amber-200/40" aria-hidden="true">
+          <svg class="w-6 h-6 text-[#0b162c]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="text-xs uppercase tracking-widest text-amber-300 font-semibold">
+            Chalermkwansatree School &bull; SMBP Grade 9 (M.3) &bull; IPST ว 3.1 ม.3/3
+          </div>
+          <h1 class="text-lg sm:text-xl font-bold leading-tight truncate">
+            <span class="en-only">3D Lunar Cycle &amp; Orbital Revolution Laboratory</span>
+            <span class="th-only">ห้องปฏิบัติการจำลอง 3 มิติ: ข้างขึ้น-ข้างแรม และการโคจรของดวงจันทร์</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Language Mode Switcher -->
+      <div class="flex items-center gap-1.5 bg-[#152544] p-1 rounded-lg border border-slate-700" role="group" aria-label="Language Mode">
+        <button id="langBilingual" type="button" class="px-2.5 py-1 text-xs sm:text-sm rounded-md font-bold bg-[#f59e0b] text-[#0b162c] transition">EN + ไทย</button>
+        <button id="langEn" type="button" class="px-2.5 py-1 text-xs sm:text-sm rounded-md font-semibold text-slate-200 hover:bg-slate-700 transition">EN</button>
+        <button id="langTh" type="button" class="px-2.5 py-1 text-xs sm:text-sm rounded-md font-semibold text-slate-200 hover:bg-slate-700 transition">ไทย</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 flex-1 space-y-4">
+
+    <!-- Primary Simulation Row: 3D Observatory + Earth-Observer Scope -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+
+      <!-- Left 8 Cols: 3D Interactive WebGL Orbital Viewport -->
+      <div class="lg:col-span-8 academic-card p-3 flex flex-col gap-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-[#1b365d]">
+              <span class="en-only">3D Earth–Moon–Sun Orbital Simulation</span>
+              <span class="th-only">แบบจำลอง 3 มิติ ระบบโลก–ดวงจันทร์–ดวงอาทิตย์</span>
+            </h2>
+            <p class="text-xs text-slate-600">
+              <span class="en-only">Drag to rotate 3D camera &bull; Scroll or use buttons to zoom &bull; Sunlight enters from the right (+X)</span>
+              <span class="th-only">ลากเพื่อหมุนมุมกล้อง 3 มิติ &bull; เลื่อนลูกกลิ้งเพื่อซูม &bull; แสงอาทิตย์ส่องมาจากด้านขวา (+X)</span>
+            </p>
+          </div>
+
+          <!-- Camera Preset Toolbar -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" data-cam="iso" class="cam-btn active text-xs px-2.5 py-1 rounded-md border border-slate-300 bg-slate-100 text-slate-800 hover:bg-amber-100">3D Iso</button>
+            <button type="button" data-cam="top" class="cam-btn text-xs px-2.5 py-1 rounded-md border border-slate-300 bg-slate-100 text-slate-800 hover:bg-amber-100">
+              <span class="en-only">North Pole</span><span class="th-only"> ขั้วโลกเหนือ</span>
+            </button>
+            <button type="button" data-cam="side" class="cam-btn text-xs px-2.5 py-1 rounded-md border border-slate-300 bg-slate-100 text-slate-800 hover:bg-amber-100">
+              <span class="en-only">Side 5.1° Tilt</span><span class="th-only"> ด้านข้าง 5.1°</span>
+            </button>
+            <button type="button" data-cam="earth" class="cam-btn text-xs px-2.5 py-1 rounded-md border border-slate-300 bg-slate-100 text-slate-800 hover:bg-amber-100">
+              <span class="en-only">Moon Close-Up</span><span class="th-only"> โฟกัสดวงจันทร์</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Canvas Container -->
+        <div id="viewport3d">
+          <!-- Floating HUD Badges -->
+          <div class="absolute top-3 left-3 z-10 pointer-events-none flex flex-col gap-1.5">
+            <div class="bg-[#0b162c]/85 backdrop-blur-sm border border-amber-400/40 text-white px-3 py-1.5 rounded-lg text-xs shadow">
+              <div class="text-amber-300 font-bold tracking-wide" id="hudPhaseTitle">New Moon — จันทร์ดับ</div>
+              <div class="text-slate-200 tabular-nums" id="hudOrbitStats">Day 0.0 / 29.53 &bull; Angle 0° &bull; Lit 0%</div>
+            </div>
+            <div id="hudTiltBadge" class="bg-emerald-950/85 backdrop-blur-sm border border-emerald-400/40 text-emerald-200 px-2.5 py-1 rounded-md text-[11px] w-fit">
+              5.145° Inclined Orbit Active (2&times; visual scale)
+            </div>
+          </div>
+
+          <!-- Sunlight Direction Indicator -->
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none hidden sm:flex flex-col items-center gap-1 bg-amber-500/15 border border-amber-400/40 px-2 py-2.5 rounded-lg text-amber-200 text-[11px] font-bold">
+            <span>&#9728;</span>
+            <span class="writing-mode-vertical">SUNLIGHT</span>
+            <span>&larr;</span>
+          </div>
+
+          <!-- Zoom Controls -->
+          <div class="absolute bottom-3 right-3 z-10 flex items-center gap-1.5">
+            <button id="btnZoomIn" type="button" title="Zoom In" class="w-8 h-8 rounded-md bg-[#0b162c]/85 hover:bg-[#1b365d] text-white border border-slate-500/60 font-bold text-base flex items-center justify-center">+</button>
+            <button id="btnZoomOut" type="button" title="Zoom Out" class="w-8 h-8 rounded-md bg-[#0b162c]/85 hover:bg-[#1b365d] text-white border border-slate-500/60 font-bold text-base flex items-center justify-center">&minus;</button>
+            <button id="btnResetCam" type="button" title="Reset Camera" class="px-2.5 h-8 rounded-md bg-[#0b162c]/85 hover:bg-[#1b365d] text-amber-200 border border-slate-500/60 text-xs font-semibold">Reset View</button>
+          </div>
+
+          <!-- Bottom Legend Strip -->
+          <div class="absolute bottom-3 left-3 z-10 pointer-events-none flex flex-wrap gap-2 text-[11px] text-slate-200 bg-[#0b162c]/80 px-2.5 py-1 rounded-md border border-slate-700/70">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Near-Side Flag (Tidal Lock)</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Ecliptic Nodes</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> CCW Revolution</span>
+          </div>
+        </div>
+
+        <!-- Playback & Scrubber Bar -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <button id="btnPlayPause" type="button" class="px-3.5 py-1.5 rounded-lg bg-[#1b365d] hover:bg-[#132744] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm">
+                <span id="playIcon">&#10074;&#10074;</span>
+                <span id="playLabel">Pause</span>
+              </button>
+              <button id="btnStepBack" type="button" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold">-1 Day</button>
+              <button id="btnStepFwd" type="button" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold">+1 Day</button>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <label for="speedRange">
+                <span class="en-only">Orbit Speed:</span>
+                <span class="th-only">ความเร็ว:</span>
+              </label>
+              <input id="speedRange" type="range" min="0.25" max="4" step="0.25" value="1" class="w-24 sm:w-28" />
+              <span id="speedVal" class="tabular-nums font-bold text-[#1b365d] w-10">1.00&times;</span>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs font-semibold text-slate-700">
+              <span>
+                <span class="en-only">Synodic Cycle Day (0 &ndash; 29.53 days)</span>
+                <span class="th-only">รอบเดือนจันทรคติ (0 &ndash; 29.53 วัน)</span>
+              </span>
+              <span id="scrubberReadout" class="tabular-nums text-[#1b365d] font-bold">Day 0.00 &bull; 0.0°</span>
+            </div>
+            <input id="orbitSlider" type="range" min="0" max="360" step="0.5" value="0" class="w-full" />
+            <div class="flex justify-between text-[11px] text-slate-500 tabular-nums">
+              <span>0° (New / แรม 15)</span>
+              <span>90° (1st Q / ขึ้น 8)</span>
+              <span>180° (Full / ขึ้น 15)</span>
+              <span>270° (Last Q / แรม 8)</span>
+              <span>360°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right 4 Cols: Live Earth-Observer Phase Scope & Telemetry -->
+      <div class="lg:col-span-4 academic-card p-4 flex flex-col justify-between gap-3">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+            <div>
+              <h2 class="text-base font-bold text-[#1b365d]">
+                <span class="en-only">View from Earth (Thailand)</span>
+                <span class="th-only">มุมมองจากพื้นโลก (ประเทศไทย)</span>
+              </h2>
+              <p class="text-xs text-slate-500">Northern Hemisphere Perspective (16.8°N)</p>
+            </div>
+            <span id="wanPhraBadge" class="hidden text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-400">
+              วันพระ (Wan Phra)
+            </span>
+          </div>
+
+          <!-- Synchronized Lunar Disc Canvas -->
+          <div class="flex flex-col items-center bg-[#081020] rounded-xl p-4 border border-slate-800 shadow-inner">
+            <div class="w-full flex justify-between text-[11px] text-slate-400 font-semibold px-2 mb-1">
+              <span>E (ตะวันออก)</span>
+              <span id="waxWaneTag" class="text-amber-300 font-bold">NEW MOON</span>
+              <span>W (ตะวันตก)</span>
+            </div>
+            <canvas id="phaseCanvas" width="180" height="180" class="max-w-full h-auto"></canvas>
+            <div class="mt-2 text-center">
+              <div id="phaseNameEn" class="text-lg font-bold text-white en-only">New Moon</div>
+              <div id="phaseNameTh" class="text-base font-bold text-amber-300 th-only">จันทร์ดับ (เดือนมืด)</div>
+              <div id="thaiLunarDate" class="text-xs text-sky-200 mt-0.5 font-semibold">แรม 15 ค่ำ (Wan Phra)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Data Grid -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+            <div class="text-slate-500 font-semibold">
+              <span class="en-only">Illumination</span>
+              <span class="th-only">ความสว่างที่เห็น</span>
+            </div>
+            <div id="statIllum" class="text-lg font-bold text-[#1b365d] tabular-nums">0.0%</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+            <div class="text-slate-500 font-semibold">
+              <span class="en-only">Tidal Regime</span>
+              <span class="th-only">ระดับน้ำขึ้น–ลง</span>
+            </div>
+            <div id="statTide" class="text-sm font-bold text-emerald-800">Spring Tide (น้ำเกิด)</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 col-span-2">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-slate-500 font-semibold">
+                <span class="en-only">Approx. Local Sky Schedule (+50 min/day)</span>
+                <span class="th-only">เวลาขึ้น–ตกโดยประมาณ (ช้าลง ~50 นาที/วัน)</span>
+              </span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-center tabular-nums">
+              <div class="bg-white border border-slate-200 rounded py-1">
+                <div class="text-[10px] text-slate-500">Rise / ขึ้น</div>
+                <div id="statRise" class="font-bold text-[#1b365d]">06:00</div>
+              </div>
+              <div class="bg-white border border-slate-200 rounded py-1">
+                <div class="text-[10px] text-slate-500">Transit / กลางฟ้า</div>
+                <div id="statTransit" class="font-bold text-[#1b365d]">12:00</div>
+              </div>
+              <div class="bg-white border border-slate-200 rounded py-1">
+                <div class="text-[10px] text-slate-500">Set / ตก</div>
+                <div id="statSet" class="font-bold text-[#1b365d]">18:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pedagogical Note for Current Phase -->
+        <div class="bg-amber-50/90 border border-amber-200 rounded-lg p-2.5 text-xs text-slate-800">
+          <div class="font-bold text-amber-900 mb-0.5">
+            <span class="en-only">Observation Insight:</span>
+            <span class="th-only">ข้อสังเกตทางดาราศาสตร์:</span>
+          </div>
+          <p id="phaseDescEn" class="en-only">Moon lies between Earth and Sun. The sunlit hemisphere faces away from Earth; rises and sets with the Sun.</p>
+          <p id="phaseDescTh" class="th-only mt-1 text-slate-700">ดวงจันทร์อยู่ระหว่างโลกและดวงอาทิตย์ ด้านสว่างหันออกจากโลก จึงมองไม่เห็นบนท้องฟ้า ขึ้นและตกพร้อมดวงอาทิตย์</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabbed Academic Laboratory Modules -->
+    <section class="academic-card overflow-hidden">
+      <!-- Tab Navigation -->
+      <div class="flex flex-wrap border-b border-slate-200 bg-slate-100/80" role="tablist">
+        <button type="button" data-tab="explore" class="tab-btn active px-4 py-3 text-sm flex-1 sm:flex-none text-center">
+          <span class="en-only">1. Phases &amp; 3D Layers</span>
+          <span class="th-only">1. 8 ดิถี &amp; ชั้นข้อมูล 3 มิติ</span>
+        </button>
+        <button type="button" data-tab="sidereal" class="tab-btn px-4 py-3 text-sm flex-1 sm:flex-none text-center text-slate-700">
+          <span class="en-only">2. Sidereal vs. Synodic (27.3 vs. 29.5 d)</span>
+          <span class="th-only">2. คาบดาราคติ vs จันทรคติ</span>
+        </button>
+        <button type="button" data-tab="misconceptions" class="tab-btn px-4 py-3 text-sm flex-1 sm:flex-none text-center text-slate-700">
+          <span class="en-only">3. Misconception Lab &amp; Glossary</span>
+          <span class="th-only">3. แก้ความเข้าใจผิด &amp; คำศัพท์</span>
+        </button>
+        <button type="button" data-tab="quiz" class="tab-btn px-4 py-3 text-sm flex-1 sm:flex-none text-center text-slate-700">
+          <span class="en-only">4. Grade 9 Mastery Quiz</span>
+          <span class="th-only">4. แบบทดสอบ ม.3</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: 8 Phase Selector & 3D Scientific Layer Controls -->
+      <div id="tab-explore" class="tab-panel p-4 space-y-4">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wide text-[#1b365d] mb-2">
+            <span class="en-only">Jump to Any of the 8 Lunar Phases (Click to Lock Orbit)</span>
+            <span class="th-only">เลือกตำแหน่งดิถีดวงจันทร์ทั้ง 8 รูปแบบ (คลิกเพื่อดูตำแหน่งใน 3 มิติ)</span>
+          </h3>
+          <div id="phaseGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2"></div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-4">
+          <h3 class="text-sm font-bold uppercase tracking-wide text-[#1b365d] mb-2">
+            <span class="en-only">3D Scientific Layer Toggles (Evidence-Based Inquiry)</span>
+            <span class="th-only">เปิด–ปิดชั้นข้อมูลทางวิทยาศาสตร์ 3 มิติ</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+            <button id="toggleTilt" type="button" class="toggle-pill on text-left p-2.5 rounded-lg border border-slate-300 bg-white">
+              <div class="flex items-center justify-between font-bold text-xs">
+                <span>5.145° Orbit Tilt</span>
+                <span class="status-dot text-[10px] px-1.5 py-0.5 rounded bg-[#1b365d] text-white">ON</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1">
+                <span class="en-only">Shows orbital inclination &amp; why eclipses are rare</span>
+                <span class="th-only">ระนาบเอียง 5.145° อธิบายเหตุผลที่อุปราคาไม่เกิดทุกเดือน</span>
+              </div>
+            </button>
+
+            <button id="toggleShadow" type="button" class="toggle-pill text-left p-2.5 rounded-lg border border-slate-300 bg-white">
+              <div class="flex items-center justify-between font-bold text-xs">
+                <span>Earth Shadow Cone</span>
+                <span class="status-dot text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">OFF</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1">
+                <span class="en-only">Reveals Earth's umbra behind Earth (-X)</span>
+                <span class="th-only">แสดงกรวยเงามืดของโลกเพื่อพิสูจน์ว่าเงาโลกไม่ทำให้เกิดข้างขึ้นข้างแรม</span>
+              </div>
+            </button>
+
+            <button id="toggleTidalLock" type="button" class="toggle-pill on text-left p-2.5 rounded-lg border border-slate-300 bg-white">
+              <div class="flex items-center justify-between font-bold text-xs">
+                <span>Tidal Lock Marker</span>
+                <span class="status-dot text-[10px] px-1.5 py-0.5 rounded bg-[#1b365d] text-white">ON</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1">
+                <span class="en-only">Tracks synchronous 27.3-day rotation</span>
+                <span class="th-only">หมุดแดงแสดงว่าดวงจันทร์หมุนรอบตัวเองเท่ากับคาบโคจร</span>
+              </div>
+            </button>
+
+            <button id="toggleSunRays" type="button" class="toggle-pill on text-left p-2.5 rounded-lg border border-slate-300 bg-white">
+              <div class="flex items-center justify-between font-bold text-xs">
+                <span>Sunlight Vectors</span>
+                <span class="status-dot text-[10px] px-1.5 py-0.5 rounded bg-[#1b365d] text-white">ON</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1">
+                <span class="en-only">Parallel solar rays lighting 50% of Moon</span>
+                <span class="th-only">ลำแสงอาทิตย์ขนานส่องสว่างครึ่งดวงจันทร์เสมอ</span>
+              </div>
+            </button>
+
+            <button id="toggleTides" type="button" class="toggle-pill text-left p-2.5 rounded-lg border border-slate-300 bg-white">
+              <div class="flex items-center justify-between font-bold text-xs">
+                <span>Tidal Bulge (น้ำขึ้น-ลง)</span>
+                <span class="status-dot text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">OFF</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1">
+                <span class="en-only">Spring (น้ำเกิด) vs. Neap (น้ำตาย) ocean bulge</span>
+                <span class="th-only">แสดงแรงไทดัลน้ำเกิด (ขึ้น/แรม 15 ค่ำ) และน้ำตาย (8 ค่ำ)</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Key Astronomical Constants Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-[#f4f6fa] border border-slate-200 rounded-lg p-3 text-xs">
+          <div>
+            <div class="text-slate-500">Mean Earth–Moon Distance</div>
+            <div class="font-bold text-[#1b365d] text-sm tabular-nums">384,400 km</div>
+            <div class="text-[11px] text-slate-500">Perigee 363,000 &ndash; Apogee 405,000 km</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Moon Diameter</div>
+            <div class="font-bold text-[#1b365d] text-sm tabular-nums">3,476 km (~&frac14; Earth)</div>
+            <div class="text-[11px] text-slate-500">Orbital speed ~1 km/s</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Synodic vs. Sidereal Month</div>
+            <div class="font-bold text-[#1b365d] text-sm tabular-nums">29.53 d vs. 27.32 d</div>
+            <div class="text-[11px] text-slate-500">Difference: +2.21 days</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Daily Sky Shift</div>
+            <div class="font-bold text-[#1b365d] text-sm tabular-nums">~13° East / +50 min</div>
+            <div class="text-[11px] text-slate-500">Moon rises ~50 min later daily</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Sidereal vs Synodic Month Interactive Lab -->
+      <div id="tab-sidereal" class="tab-panel hidden p-4 space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          <div class="lg:col-span-7 bg-[#081020] rounded-xl p-3 border border-slate-800">
+            <div class="flex items-center justify-between text-xs text-amber-200 mb-2">
+              <span class="font-bold">Heliocentric View: Why Synodic (29.53 d) &gt; Sidereal (27.32 d)</span>
+              <span id="siderealDayLabel" class="tabular-nums font-bold text-white bg-slate-800 px-2 py-0.5 rounded">Day 27.32</span>
+            </div>
+            <canvas id="siderealCanvas" width="600" height="320" class="w-full h-auto rounded-lg"></canvas>
+            <div class="mt-3 space-y-1.5">
+              <div class="flex justify-between text-xs text-slate-300">
+                <span>Day 0 (New Moon Start)</span>
+                <span class="text-sky-300 font-bold">Day 27.32 (Sidereal 360°)</span>
+                <span class="text-amber-300 font-bold">Day 29.53 (Synodic New Moon)</span>
+              </div>
+              <input id="siderealSlider" type="range" min="0" max="29.53" step="0.1" value="27.32" class="w-full" />
+              <div class="flex flex-wrap gap-2 pt-1">
+                <button type="button" data-sday="0" class="sday-preset px-2.5 py-1 text-xs rounded bg-slate-700 hover:bg-slate-600 text-white font-semibold">Day 0: Aligned</button>
+                <button type="button" data-sday="27.32" class="sday-preset px-2.5 py-1 text-xs rounded bg-sky-700 hover:bg-sky-600 text-white font-semibold">Day 27.32: Sidereal Complete</button>
+                <button type="button" data-sday="29.53" class="sday-preset px-2.5 py-1 text-xs rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold">Day 29.53: Synodic Complete</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 space-y-3 text-sm">
+            <div class="bg-sky-50 border border-sky-200 rounded-lg p-3">
+              <h4 class="font-bold text-sky-900">Sidereal Month (เดือนดาราคติ): 27.32 Days</h4>
+              <p class="text-xs text-slate-700 mt-1 en-only">Time for the Moon to complete one true 360° revolution around Earth relative to distant fixed stars. Matches the Moon's rotation period (655.7 hours), creating tidal locking.</p>
+              <p class="text-xs text-slate-700 mt-1 th-only">เวลาที่ดวงจันทร์โคจรรอบโลกครบ 360° เมื่อเทียบกับดาวฤกษ์ที่อยู่ไกล เท่ากับคาบการหมุนรอบตัวเองของดวงจันทร์ ทำให้เราเห็นดวงจันทร์ด้านเดิมเสมอ</p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <h4 class="font-bold text-amber-900">Synodic Month (เดือนจันทรคติ): 29.53 Days</h4>
+              <p class="text-xs text-slate-700 mt-1 en-only">Time between successive New Moons. Because Earth simultaneously moves ~27° forward along its orbit around the Sun, the Moon must travel an extra ~27° (~2.21 days) to re-align between Earth and Sun.</p>
+              <p class="text-xs text-slate-700 mt-1 th-only">เวลาตั้งแต่จันทร์ดับหนึ่งถึงจันทร์ดับถัดไป ยาวกว่าเดือนดาราคติ ~2.21 วัน เพราะโลกเคลื่อนที่รอบดวงอาทิตย์ไป ~27° ดวงจันทร์จึงต้องโคจรเพิ่มอีก ~27° เพื่อกลับมาอยู่แนวเดียวกับดวงอาทิตย์</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+              <div class="font-bold text-[#1b365d] mb-1">Thai Lunar Calendar Connection (ปฏิทินจันทรคติไทย)</div>
+              <p class="text-slate-700">Because 1 synodic month averages 29.5 days, the Thai calendar alternates 29-day odd months (เดือนขาด: ends at แรม 14 ค่ำ) and 30-day even months (เดือนเต็ม: ends at แรม 15 ค่ำ).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Misconception Buster & Bilingual Glossary -->
+      <div id="tab-misconceptions" class="tab-panel hidden p-4 space-y-5">
+        <div>
+          <h3 class="text-base font-bold text-[#1b365d] mb-2">
+            <span class="en-only">Grade 9 Astronomy Misconception Buster (Click "Demonstrate in 3D")</span>
+            <span class="th-only">แก้ความเข้าใจผิดที่พบบ่อยของนักเรียน ม.3 (คลิกเพื่อพิสูจน์ในแบบจำลอง 3 มิติ)</span>
+          </h3>
+          <div id="misconceptionGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <h3 class="text-base font-bold text-[#1b365d]">
+              <span class="en-only">Bilingual Academic Glossary (IPST ว 3.1 ม.3/3)</span>
+              <span class="th-only">คลังคำศัพท์ดาราศาสตร์สองภาษา (มาตรฐาน ว 3.1 ม.3/3)</span>
+            </h3>
+            <input id="glossarySearch" type="text" placeholder="Filter English or Thai term..." class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg w-full sm:w-64 focus:outline-none focus:border-[#1b365d]" />
+          </div>
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="w-full text-left text-xs sm:text-sm border-collapse">
+              <thead class="bg-[#1b365d] text-white">
+                <tr>
+                  <th class="py-2 px-3">English Term</th>
+                  <th class="py-2 px-3">Thai Term (ภาษาไทย)</th>
+                  <th class="py-2 px-3">Academic Definition</th>
+                </tr>
+              </thead>
+              <tbody id="glossaryBody" class="divide-y divide-slate-200 bg-white"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Grade 9 Mastery Quiz & Academic Report Export -->
+      <div id="tab-quiz" class="tab-panel hidden p-4 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-[#f4f6fa] border border-slate-200 rounded-lg p-3">
+          <div>
+            <h3 class="text-base font-bold text-[#1b365d]">
+              <span class="en-only">SMBP Grade 9 Formative Mastery Assessment (8 Items)</span>
+              <span class="th-only">แบบทดสอบวัดความเข้าใจวิทยาศาสตร์ ม.3 (8 ข้อ)</span>
+            </h3>
+            <p class="text-xs text-slate-600">Aligned to IPST ว 3.1 ม.3/3 &bull; Tagged by Bloom's Taxonomy &bull; Instant Evidence Feedback</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="studentNameInput" type="text" placeholder="Student Name / ชื่อนักเรียน" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-md bg-white w-44" />
+            <span id="quizScoreBadge" class="px-3 py-1.5 rounded-md bg-[#1b365d] text-white text-xs font-bold tabular-nums">Score: 0 / 8</span>
+          </div>
+        </div>
+
+        <div id="quizContainer" class="space-y-3"></div>
+
+        <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-200">
+          <button id="btnSubmitQuiz" type="button" class="px-4 py-2 rounded-lg bg-[#1b365d] hover:bg-[#132744] text-white font-bold text-sm shadow-sm">
+            Check Answers / ตรวจคำตอบ
+          </button>
+          <button id="btnResetQuiz" type="button" class="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-sm">
+            Reset Quiz / ทำใหม่
+          </button>
+          <button id="btnExportReport" type="button" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-sm">
+            Download Word Report (.doc)
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Academic Footer -->
+  <footer class="bg-[#0b162c] text-slate-300 text-xs py-3 px-4 border-t border-slate-800 mt-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+      <span>Chalermkwansatree School &bull; Science Math Bilingual Program (SMBP 3.4) &bull; Teacher MD Showket Hasan</span>
+      <span>Data Grounded in NASA Science, NASA Moon Fact Sheet, LPI Astronomy Education &amp; IPST (สสวท.) ว 3.1 ม.3/3</span>
+    </div>
+  </footer>
+
+  <!-- Non-blocking Toast Notification -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 opacity-0 pointer-events-none translate-y-2 bg-[#0b162c] text-white border border-amber-400 px-4 py-2.5 rounded-lg shadow-xl text-xs font-semibold max-w-xs"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. GROUNDED ASTRONOMICAL & BILINGUAL PEDAGOGICAL DATA
+      // =========================================================================
+      const SYNODIC_MONTH = 29.53;
+      const SIDEREAL_MONTH = 27.32;
+
+      const PHASES = [
+        {
+          id: 'new',
+          angle: 0,
+          en: 'New Moon',
+          th: 'จันทร์ดับ (เดือนมืด)',
+          thaiDate: 'แรม 15 ค่ำ (หรือ แรม 14 ค่ำ)',
+          wanPhra: true,
+          tide: 'Spring Tide (น้ำเกิด)',
+          rise: '06:00',
+          transit: '12:00',
+          set: '18:00',
+          descEn: 'The Moon lies between Earth and the Sun (0° elongation). Its sunlit half faces away from Earth, so it is dark and rises/sets alongside the Sun.',
+          descTh: 'ดวงจันทร์อยู่ระหว่างโลกและดวงอาทิตย์ ด้านสว่างหันออกจากโลก จึงมองไม่เห็นบนท้องฟ้า ขึ้นและตกพร้อมดวงอาทิตย์'
+        },
+        {
+          id: 'wax-cres',
+          angle: 45,
+          en: 'Waxing Crescent',
+          th: 'ข้างขึ้นเสี้ยว',
+          thaiDate: 'ขึ้น 1–7 ค่ำ (เด่นชัด ~ขึ้น 4 ค่ำ)',
+          wanPhra: false,
+          tide: 'Moderate Tide (น้ำปานกลาง)',
+          rise: '09:00',
+          transit: '15:00',
+          set: '21:00',
+          descEn: '45° east of the Sun. A thin lit crescent appears on the right (west-facing) edge, easily spotted in the western evening sky after sunset.',
+          descTh: 'ดวงจันทร์อยู่ห่างไปทางตะวันออกของดวงอาทิตย์ 45° เห็นเป็นเสี้ยวสว่างด้านขวา หันด้านนูนไปทางทิศตะวันตกตอนหัวค่ำ'
+        },
+        {
+          id: 'first-q',
+          angle: 90,
+          en: 'First Quarter',
+          th: 'จันทร์ครึ่งดวงข้างขึ้น',
+          thaiDate: 'ขึ้น 8 ค่ำ',
+          wanPhra: true,
+          tide: 'Neap Tide (น้ำตาย)',
+          rise: '12:00',
+          transit: '18:00',
+          set: '00:00',
+          descEn: '90° east of the Sun (one-quarter orbit completed). The right half is illuminated; rises around noon (visible in afternoon daylight) and sets around midnight.',
+          descTh: 'ดวงจันทร์ทำมุม 90° กับโลกและดวงอาทิตย์ สว่างครึ่งดวงด้านขวา ขึ้นประมาณเที่ยงวัน (เห็นได้ในตอนกลางวัน) และตกประมาณเที่ยงคืน'
+        },
+        {
+          id: 'wax-gib',
+          angle: 135,
+          en: 'Waxing Gibbous',
+          th: 'ข้างขึ้นค่อนดวง',
+          thaiDate: 'ขึ้น 9–14 ค่ำ (เด่นชัด ~ขึ้น 11–12 ค่ำ)',
+          wanPhra: false,
+          tide: 'Moderate Tide (น้ำปานกลาง)',
+          rise: '15:00',
+          transit: '21:00',
+          set: '03:00',
+          descEn: '135° east of the Sun. More than half of the near side is illuminated (growing toward Full Moon); rises in mid-afternoon and shines high in the evening.',
+          descTh: 'สว่างมากกว่าครึ่งดวงและเพิ่มขึ้นเรื่อยๆ ขึ้นทางขอบฟ้าตะวันออกช่วงบ่าย และสว่างเด่นบนท้องฟ้าช่วงหัวค่ำถึงดึก'
+        },
+        {
+          id: 'full',
+          angle: 180,
+          en: 'Full Moon',
+          th: 'จันทร์เพ็ญ (เต็มดวง)',
+          thaiDate: 'ขึ้น 15 ค่ำ',
+          wanPhra: true,
+          tide: 'Spring Tide (น้ำเกิด)',
+          rise: '18:00',
+          transit: '00:00',
+          set: '06:00',
+          descEn: '180° opposite the Sun. The entire near side is sunlit. Rises in the east at sunset (~18:00), reaches zenith at midnight, and sets at sunrise (~06:00).',
+          descTh: 'ดวงจันทร์อยู่ตรงข้ามกับดวงอาทิตย์ หันด้านสว่างเต็มดวงเข้าหาโลก ขึ้นทิศตะวันออกเวลา ~18:00 น. อยู่กลางฟ้าเที่ยงคืน และตกเวลา ~06:00 น.'
+        },
+        {
+          id: 'wan-gib',
+          angle: 225,
+          en: 'Waning Gibbous',
+          th: 'ข้างแรมค่อนดวง',
+          thaiDate: 'แรม 1–7 ค่ำ (เด่นชัด ~แรม 3–4 ค่ำ)',
+          wanPhra: false,
+          tide: 'Moderate Tide (น้ำปานกลาง)',
+          rise: '21:00',
+          transit: '03:00',
+          set: '09:00',
+          descEn: '225° along the orbit (135° west of Sun). Illumination decreases from the right edge; rises in late evening and remains visible in the morning western sky.',
+          descTh: 'ส่วนสว่างเริ่มลดลงทางด้านขวา ขึ้นช่วงค่ำ (~21:00 น.) และยังมองเห็นค้างบนท้องฟ้าทิศตะวันตกในช่วงเช้า'
+        },
+        {
+          id: 'last-q',
+          angle: 270,
+          en: 'Last (Third) Quarter',
+          th: 'จันทร์ครึ่งดวงข้างแรม',
+          thaiDate: 'แรม 8 ค่ำ',
+          wanPhra: true,
+          tide: 'Neap Tide (น้ำตาย)',
+          rise: '00:00',
+          transit: '06:00',
+          set: '12:00',
+          descEn: '270° along the orbit (90° west of Sun). The left (east-facing) half is lit; rises around midnight, stands highest at dawn, and sets around noon.',
+          descTh: 'ดวงจันทร์ทำมุม 90° ทางตะวันตกของดวงอาทิตย์ สว่างครึ่งดวงด้านซ้าย หันด้านนูนไปทางทิศตะวันออก ขึ้นเที่ยงคืนและตกเที่ยงวัน'
+        },
+        {
+          id: 'wan-cres',
+          angle: 315,
+          en: 'Waning Crescent',
+          th: 'ข้างแรมเสี้ยว',
+          thaiDate: 'แรม 9–14 ค่ำ (เด่นชัด ~แรม 11–12 ค่ำ)',
+          wanPhra: false,
+          tide: 'Moderate Tide (น้ำปานกลาง)',
+          rise: '03:00',
+          transit: '09:00',
+          set: '15:00',
+          descEn: '315° along the orbit (45° west of Sun). A slender lit crescent on the left edge rises ~3 hours before dawn in the eastern sky before returning to New Moon.',
+          descTh: 'เห็นเป็นเสี้ยวบางด้านซ้าย หันด้านนูนไปทางทิศตะวันออก ขึ้นก่อนดวงอาทิตย์ประมาณ 3 ชั่วโมง (~03:00 น.) ก่อนเข้าสู่วันเดือนดับอีกครั้ง'
+        }
+      ];
+
+      const MISCONCEPTIONS = [
+        {
+          mythEn: 'Myth 1: "Earth\'s shadow causes the phases of the Moon."',
+          mythTh: 'ความเข้าใจผิด 1: "เงาของโลกทอดทับดวงจันทร์ทำให้เกิดข้างขึ้นข้างแรม"',
+          factEn: 'Half of the Moon is ALWAYS lit by the Sun. Phases happen because our viewing angle changes as the Moon orbits Earth. Because the Moon\'s orbit is tilted 5.145°, it usually passes above or below Earth\'s shadow at Full Moon (Earth\'s shadow only causes lunar eclipses near orbital nodes).',
+          factTh: 'ครึ่งหนึ่งของดวงจันทร์ได้รับแสงอาทิตย์เสมอ ข้างขึ้นข้างแรมเกิดจากมุมมองของคนบนโลกที่เปลี่ยนไปตามวงโคจร และเพราะระนาบวงโคจรเอียง 5.145° ดวงจันทร์จึงมักผ่านเหนือหรือใต้เงาโลก เงาโลกทำให้เกิดจันทรุปราคาเท่านั้น',
+          demoLabel: 'Demonstrate in 3D (Full Moon + Shadow + 5.145° Tilt)',
+          demoAction: function () {
+            state.isPlaying = false;
+            state.angleDeg = 180;
+            state.showTilt = true;
+            state.showShadow = true;
+            state.cameraPreset = 'side';
+            syncAllControls();
+            applyCameraPreset('side');
+            showToast('Full Moon at 180°: Notice the Moon sits BELOW Earth\'s shadow cone because of the 5.145° orbital tilt!');
+          }
+        },
+        {
+          mythEn: 'Myth 2: "The Moon can only be seen at night."',
+          mythTh: 'ความเข้าใจผิด 2: "ดวงจันทร์สามารถมองเห็นได้เฉพาะเวลากลางคืนเท่านั้น"',
+          factEn: 'First Quarter rises around noon (12:00) and is brightly visible in the afternoon sky, while Last Quarter rises at midnight and stays visible throughout the morning until noon.',
+          factTh: 'ดวงจันทร์ขึ้น 8 ค่ำ ขึ้นตอนเที่ยงวันจึงเห็นได้ในช่วงบ่าย ส่วนแรม 8 ค่ำ ตกตอนเที่ยงวันจึงเห็นได้ชัดเจนบนท้องฟ้าช่วงเช้า',
+          demoLabel: 'Demonstrate in 3D (First Quarter — Daytime Visibility)',
+          demoAction: function () {
+            state.isPlaying = false;
+            state.angleDeg = 90;
+            state.showSunRays = true;
+            state.cameraPreset = 'top';
+            syncAllControls();
+            applyCameraPreset('top');
+            showToast('First Quarter (ขึ้น 8 ค่ำ): Rises at ~12:00 noon and is visible throughout the afternoon!');
+          }
+        },
+        {
+          mythEn: 'Myth 3: "The Moon does not rotate, so there is a permanent dark side."',
+          mythTh: 'ความเข้าใจผิด 3: "ดวงจันทร์ไม่หมุนรอบตัวเอง จึงมีด้านที่มืดตลอดกาล"',
+          factEn: 'The Moon rotates on its axis once every 27.32 days — the exact same time it takes to revolve around Earth (synchronous rotation / tidal locking). Every side receives ~14.7 days of sunlight and ~14.7 days of night.',
+          factTh: 'ดวงจันทร์หมุนรอบตัวเอง 1 รอบใช้เวลา 27.32 วัน เท่ากับเวลาที่โคจรรอบโลกพอดี (การหมุนแบบประสานเวลา) ทุกด้านของดวงจันทร์ได้รับแสงอาทิตย์สลับมืดเท่าๆ กัน',
+          demoLabel: 'Demonstrate in 3D (Watch the Red Near-Side Flag)',
+          demoAction: function () {
+            state.isPlaying = true;
+            state.speed = 1.25;
+            state.showTidalLock = true;
+            state.cameraPreset = 'top';
+            syncAllControls();
+            applyCameraPreset('top');
+            showToast('Tidal Locking Active: Watch the red Near-Side Flag always point toward Earth as the Moon rotates 360°!');
+          }
+        },
+        {
+          mythEn: 'Myth 4: "One orbit around Earth takes the same time as one full phase cycle."',
+          mythTh: 'ความเข้าใจผิด 4: "เวลาโคจรรอบโลก 1 รอบเท่ากับรอบข้างขึ้นข้างแรมพอดี"',
+          factEn: 'One true 360° orbit relative to fixed stars (Sidereal Month) takes 27.32 days. Because Earth advances ~27° around the Sun during that time, the Moon needs an extra 2.21 days (29.53 days total = Synodic Month) to return to New Moon.',
+          factTh: 'การโคจรครบ 360° เทียบดาวฤกษ์ (เดือนดาราคติ) ใช้เวลา 27.32 วัน แต่เพราะโลกโคจรรอบดวงอาทิตย์ไปด้วย ดวงจันทร์ต้องโคจรเพิ่มอีก 2.21 วัน รวมเป็น 29.53 วัน (เดือนจันทรคติ)',
+          demoLabel: 'Open Sidereal vs. Synodic Lab (Tab 2)',
+          demoAction: function () {
+            switchTab('sidereal');
+            state.siderealDay = 27.32;
+            document.getElementById('siderealSlider').value = '27.32';
+            drawSiderealCanvas();
+            showToast('Switched to Sidereal vs. Synodic Lab at Day 27.32 — drag to Day 29.53 to see the extra 2.21 days!');
+          }
+        }
+      ];
+
+      const GLOSSARY = [
+        { en: 'Lunar Phases', th: 'ดิถีของดวงจันทร์ / ข้างขึ้น–ข้างแรม', def: 'Apparent changes in the sunlit portion of the Moon seen from Earth as it revolves.' },
+        { en: 'Waxing', th: 'ข้างขึ้น (ขึ้น 1–15 ค่ำ)', def: 'Growing illuminated fraction from New Moon to Full Moon (right side lit in Thailand).' },
+        { en: 'Waning', th: 'ข้างแรม (แรม 1–15 ค่ำ)', def: 'Shrinking illuminated fraction from Full Moon back to New Moon (left side lit in Thailand).' },
+        { en: 'Synodic Month', th: 'เดือนจันทรคติ (29.53 วัน)', def: 'Complete lunar phase cycle from New Moon to New Moon (~29.5 days).' },
+        { en: 'Sidereal Month', th: 'เดือนดาราคติ (27.32 วัน)', def: 'True 360° orbital period of the Moon around Earth relative to fixed stars.' },
+        { en: 'Tidal Locking (Synchronous Rotation)', th: 'การหมุนแบบประสานเวลา', def: 'Moon rotation period equals its orbital period (27.32 d), keeping the same near side facing Earth.' },
+        { en: 'Orbital Inclination (5.145°)', th: 'ความเอียงของระนาบวงโคจร (5.145°)', def: 'Tilt between the Moon\'s orbital plane and Earth\'s ecliptic plane, preventing monthly eclipses.' },
+        { en: 'Orbital Nodes', th: 'โหนดวงโคจร (จุดตัดระนาบ)', def: 'Two points where the Moon\'s tilted orbit crosses the ecliptic plane; eclipses occur only near nodes.' },
+        { en: 'Spring Tide', th: 'น้ำเกิด', def: 'Maximum tidal range at New Moon & Full Moon when Sun, Earth, and Moon align.' },
+        { en: 'Neap Tide', th: 'น้ำตาย', def: 'Minimum tidal range at First & Last Quarter when Sun, Earth, and Moon form a 90° angle.' },
+        { en: 'Perigee / Apogee', th: 'จุดใกล้โลกที่สุด / ไกลโลกที่สุด', def: 'Closest (~363,000 km) and farthest (~405,000 km) points in the Moon\'s elliptical orbit.' },
+        { en: 'Moonrise Delay (~50 min/day)', th: 'การขึ้นช้าลงของดวงจันทร์ (~50 นาที/วัน)', def: 'Daily delay in moonrise caused by the Moon\'s ~13° eastward orbital revolution each day.' }
+      ];
+
+      const QUIZ_ITEMS = [
+        {
+          bloom: 'Understand',
+          qEn: '1. What is the primary scientific cause of the Moon\'s phases (ข้างขึ้น–ข้างแรม)?',
+          qTh: '1. สาเหตุหลักทางวิทยาศาสตร์ของการเกิดปรากฏการณ์ข้างขึ้น–ข้างแรมคือข้อใด?',
+          options: [
+            'A. Earth\'s shadow gradually covering the Moon each night (เงาของโลกบังดวงจันทร์)',
+            'B. Changing viewing angles of the Moon\'s sunlit half as it revolves around Earth (มุมมองส่วนสว่างเปลี่ยนไปขณะโคจรรอบโลก)',
+            'C. Clouds in Earth\'s atmosphere blocking moonlight (เมฆในชั้นบรรยากาศโลกบังแสง)',
+            'D. The Moon changing how much light it produces internally (ดวงจันทร์ผลิตแสงเองไม่เท่ากัน)'
+          ],
+          correct: 1,
+          exp: 'Half of the Moon is always illuminated by the Sun. Phases occur because our viewing angle from Earth changes continuously throughout the 29.53-day revolution.'
+        },
+        {
+          bloom: 'Remember',
+          qEn: '2. Which Thai lunar calendar day corresponds to a First Quarter Moon (จันทร์ครึ่งดวงข้างขึ้น)?',
+          qTh: '2. ดวงจันทร์ครึ่งดวงข้างขึ้น (First Quarter) ตรงกับวันใดตามปฏิทินจันทรคติไทย?',
+          options: [
+            'A. แรม 15 ค่ำ (New Moon)',
+            'B. ขึ้น 8 ค่ำ (First Quarter — Wan Phra)',
+            'C. ขึ้น 15 ค่ำ (Full Moon)',
+            'D. แรม 8 ค่ำ (Last Quarter)'
+          ],
+          correct: 1,
+          exp: 'First Quarter occurs 90° east of the Sun on ขึ้น 8 ค่ำ (one of the four Wan Phra days each lunar month).'
+        },
+        {
+          bloom: 'Analyze',
+          qEn: '3. Why does a lunar eclipse NOT happen during every Full Moon (ขึ้น 15 ค่ำ)?',
+          qTh: '3. เหตุใดจึงไม่เกิดจันทรุปราคาทุกวันขึ้น 15 ค่ำ?',
+          options: [
+            'A. The Moon\'s orbit is tilted ~5.145° to Earth\'s ecliptic plane, so it usually misses Earth\'s shadow.',
+            'B. Earth does not cast a shadow in space during most months.',
+            'C. The Moon stops revolving during Full Moon.',
+            'D. The Sun moves behind the Moon every month.'
+          ],
+          correct: 0,
+          exp: 'Because of the 5.145° orbital inclination, the Full Moon usually passes above or below Earth\'s conical umbra shadow unless it aligns near an orbital node.'
+        },
+        {
+          bloom: 'Understand',
+          qEn: '4. Why do observers on Earth always see the same near side of the Moon?',
+          qTh: '4. เพราะเหตุใดคนบนโลกจึงมองเห็นดวงจันทร์เพียงด้านเดียวเสมอ?',
+          options: [
+            'A. The Moon does not rotate on its axis at all.',
+            'B. The Moon\'s rotation period equals its sidereal orbital period (~27.32 days — tidal locking).',
+            'C. Earth\'s rotation speed equals the Moon\'s orbital speed.',
+            'D. Sunlight only ever strikes one hemisphere of the Moon.'
+          ],
+          correct: 1,
+          exp: 'Synchronous rotation (tidal locking) means the Moon spins once on its axis in 27.32 days — the exact time it takes to complete one 360° orbit around Earth.'
+        },
+        {
+          bloom: 'Analyze',
+          qEn: '5. Why is the Synodic Month (29.53 days) about 2.21 days longer than the Sidereal Month (27.32 days)?',
+          qTh: '5. เหตุใดเดือนจันทรคติ (29.53 วัน) จึงยาวกว่าเดือนดาราคติ (27.32 วัน) ประมาณ 2.21 วัน?',
+          options: [
+            'A. The Moon slows down near the end of every month.',
+            'B. Earth moves ~27° along its orbit around the Sun, so the Moon must revolve farther to re-align with the Sun.',
+            'C. Earth\'s axial tilt of 23.4° adds two extra days.',
+            'D. Ocean tides drag the Moon backward by 2 days each month.'
+          ],
+          correct: 1,
+          exp: 'While the Moon completes a 360° orbit relative to fixed stars (27.32 days), Earth advances ~27° around the Sun, requiring an extra ~2.21 days for New Moon alignment.'
+        },
+        {
+          bloom: 'Apply',
+          qEn: '6. If the Moon rises at 18:00 tonight (Full Moon), approximately what time will it rise tomorrow night?',
+          qTh: '6. หากคืนวันเพ็ญดวงจันทร์ขึ้นเวลา 18:00 น. คืนถัดไปดวงจันทร์จะขึ้นประมาณเวลาใด?',
+          options: [
+            'A. 17:10 (50 minutes earlier)',
+            'B. 18:00 (same time every day)',
+            'C. 18:50 (~50 minutes later)',
+            'D. 20:00 (2 hours later)'
+          ],
+          correct: 2,
+          exp: 'Because the Moon moves ~13° eastward in its orbit each day, Earth must rotate an extra ~50 minutes for the Moon to rise over the eastern horizon.'
+        },
+        {
+          bloom: 'Apply',
+          qEn: '7. During which pair of lunar phases do Spring Tides (น้ำเกิด — highest high tides & lowest low tides) occur?',
+          qTh: '7. ปรากฏการณ์ "น้ำเกิด" (Spring Tides) เกิดขึ้นในช่วงดิถีใดของดวงจันทร์?',
+          options: [
+            'A. First Quarter (ขึ้น 8 ค่ำ) & Last Quarter (แรม 8 ค่ำ)',
+            'B. New Moon (แรม 15 ค่ำ) & Full Moon (ขึ้น 15 ค่ำ)',
+            'C. Waxing Crescent & Waning Crescent only',
+            'D. Waxing Gibbous & Waning Gibbous only'
+          ],
+          correct: 1,
+          exp: 'At New Moon and Full Moon, the Sun, Earth, and Moon align in a straight line (syzygy), so solar and lunar tidal forces combine to produce Spring Tides (น้ำเกิด).'
+        },
+        {
+          bloom: 'Apply',
+          qEn: '8. Looking at the sky in Phitsanulok (Northern Hemisphere) at 06:00 AM, you see a half-lit Moon high overhead with its left (east) side illuminated. What phase is it?',
+          qTh: '8. เวลา 06:00 น. ที่พิษณุโลก คุณเห็นดวงจันทร์ครึ่งดวงอยู่กลางศีรษะโดยด้านซ้าย (ทิศตะวันออก) สว่าง นี่คือดิถีใด?',
+          options: [
+            'A. First Quarter (ขึ้น 8 ค่ำ)',
+            'B. Full Moon (ขึ้น 15 ค่ำ)',
+            'C. Last / Third Quarter (แรม 8 ค่ำ)',
+            'D. Waxing Crescent (ขึ้น 4 ค่ำ)'
+          ],
+          correct: 2,
+          exp: 'Last Quarter (แรม 8 ค่ำ) is lit on the left (east-facing) side, rises around midnight, transits overhead at dawn (~06:00), and sets around noon.'
+        }
+      ];
+
+      // =========================================================================
+      // 2. APPLICATION STATE
+      // =========================================================================
+      const state = {
+        angleDeg: 35,          // Starts at vivid Waxing Crescent so 3D lighting & phase scope pop immediately
+        isPlaying: true,
+        speed: 1.0,
+        showTilt: true,
+        showShadow: false,
+        showTidalLock: true,
+        showSunRays: true,
+        showTides: false,
+        cameraPreset: 'iso',
+        lang: 'bilingual',
+        activeTab: 'explore',
+        siderealDay: 27.32,
+        quizAnswers: {},
+        quizSubmitted: false
+      };
+
+      // =========================================================================
+      // 3. PROCEDURAL TEXTURES FOR 3D EARTH & MOON (ZERO EXTERNAL FILES)
+      // =========================================================================
+      function createEarthTexture() {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+        // Deep vivid ocean gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, 256);
+        grad.addColorStop(0, '#dbeafe');
+        grad.addColorStop(0.12, '#1d4ed8');
+        grad.addColorStop(0.5, '#1e40af');
+        grad.addColorStop(0.88, '#1d4ed8');
+        grad.addColorStop(1, '#e2e8f0');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 256);
+
+        // Stylized realistic continents
+        ctx.fillStyle = '#2f855a';
+        const blobs = [
+          [95, 80, 42, 26], [125, 118, 22, 18], [135, 165, 24, 34], // Americas
+          [245, 72, 34, 20], [265, 128, 30, 38],                    // Europe & Africa
+          [345, 78, 56, 30], [372, 122, 24, 20],                    // Asia & SE Asia/Thailand
+          [415, 175, 26, 18]                                        // Australia
+        ];
+        blobs.forEach(function (b) {
+          ctx.beginPath();
+          ctx.ellipse(b[0], b[1], b[2], b[3], 0.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        // Arid desert accents
+        ctx.fillStyle = '#b7955b';
+        ctx.beginPath(); ctx.ellipse(265, 108, 22, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(340, 86, 20, 8, -0.1, 0, Math.PI * 2); ctx.fill();
+
+        // Subtle cloud wisps
+        ctx.fillStyle = 'rgba(255,255,255,0.28)';
+        for (let i = 0; i < 18; i++) {
+          ctx.beginPath();
+          ctx.ellipse((i * 73) % 512, 35 + ((i * 41) % 185), 26 + (i % 15), 5 + (i % 5), 0.1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        return c;
+      }
+
+      function createMoonTexture() {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#cfd3d8';
+        ctx.fillRect(0, 0, 512, 256);
+
+        // Basaltic Maria (dark plains)
+        ctx.fillStyle = '#8b929c';
+        const maria = [
+          [110, 105, 36, 28], [160, 125, 28, 22], [215, 95, 32, 24],
+          [295, 130, 44, 30], [355, 98, 26, 20], [420, 135, 30, 24]
+        ];
+        maria.forEach(function (m) {
+          ctx.beginPath();
+          ctx.ellipse(m[0], m[1], m[2], m[3], 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Craters with light rims & dark interiors
+        for (let i = 0; i < 75; i++) {
+          const cx = (i * 67 + 19) % 500 + 6;
+          const cy = (i * 43 + 23) % 220 + 18;
+          const r = 3 + (i % 9);
+          ctx.fillStyle = 'rgba(95,100,110,0.45)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(245,247,250,0.55)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+        return c;
+      }
+
+      // =========================================================================
+      // 4. THREE.JS 3D ENGINE (WITH 2.5D CANVAS FALLBACK GUARD)
+      // =========================================================================
+      const viewportEl = document.getElementById('viewport3d');
+      let useWebGL = false;
+      let scene, camera, renderer;
+      let earthMesh, moonGroup, moonMesh, tidalFlagGroup, orbitRing, eclipticRing, nodesGroup, shadowCone, sunRaysGroup, tidalBulgeMesh, sunHaloMesh;
+      let fallbackCanvas = null, fallbackCtx = null;
+
+      // Spherical camera orbit state
+      const camSpherical = {
+        theta: 0.62,   // azimuth
+        phi: 1.08,     // polar angle from +Y
+        radius: 26,
+        targetTheta: 0.62,
+        targetPhi: 1.08,
+        targetRadius: 26,
+        lookAtMoon: false
+      };
+
+      const ORBIT_RADIUS = 10.5;
+      const VISUAL_TILT_RAD = (11.0 * Math.PI) / 180; // 2x visual exaggeration of 5.145° for clear classroom legibility
+
+      function init3DEngine() {
+        try {
+          if (typeof THREE === 'undefined') throw new Error('THREE unavailable');
+          const w = viewportEl.clientWidth || 720;
+          const h = viewportEl.clientHeight || 500;
+
+          scene = new THREE.Scene();
+          camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 400);
+
+          renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+          renderer.setSize(w, h);
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          viewportEl.insertBefore(renderer.domElement, viewportEl.firstChild);
+
+          // Lights: Strong directional sunlight from +X + subtle ambient so dark side stays readable
+          const sunLight = new THREE.DirectionalLight(0xfff7e6, 2.35);
+          sunLight.position.set(60, 0, 0);
+          scene.add(sunLight);
+
+          const ambientLight = new THREE.AmbientLight(0x2d436e, 0.36);
+          scene.add(ambientLight);
+
+          // Starfield
+          const starGeo = new THREE.BufferGeometry();
+          const starPos = new Float32Array(1500 * 3);
+          for (let i = 0; i < 1500; i++) {
+            const r = 90 + (i % 70);
+            const u = ((i * 7919) % 1000) / 1000;
+            const v = ((i * 104729) % 1000) / 1000;
+            const th = u * Math.PI * 2;
+            const ph = Math.acos(2 * v - 1);
+            starPos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[i * 3 + 1] = r * Math.cos(ph);
+            starPos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+          }
+          starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+          const starMat = new THREE.PointsMaterial({ color: 0xe2e8f0, size: 0.45, transparent: true, opacity: 0.8 });
+          scene.add(new THREE.Points(starGeo, starMat));
+
+          // Distant Sun Beacon along +X
+          const sunMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+          sunHaloMesh = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 24), sunMat);
+          sunHaloMesh.position.set(34, 0, 0);
+          scene.add(sunHaloMesh);
+
+          // Earth (with 23.4° axial tilt)
+          const earthTex = new THREE.CanvasTexture(createEarthTexture());
+          const earthMat = new THREE.MeshPhongMaterial({ map: earthTex, shininess: 18, specular: new THREE.Color(0x335588) });
+          earthMesh = new THREE.Mesh(new THREE.SphereGeometry(2.55, 48, 32), earthMat);
+          earthMesh.rotation.z = (-23.4 * Math.PI) / 180;
+          scene.add(earthMesh);
+
+          // Earth Atmosphere Glow
+          const atmoMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.14, side: THREE.BackSide });
+          const atmoMesh = new THREE.Mesh(new THREE.SphereGeometry(2.78, 32, 24), atmoMat);
+          scene.add(atmoMesh);
+
+          // Earth Tidal Bulge Ellipsoid (hidden by default)
+          const bulgeMat = new THREE.MeshPhongMaterial({
+            color: 0x38bdf8,
+            transparent: true,
+            opacity: 0.34,
+            shininess: 60,
+            depthWrite: false
+          });
+          tidalBulgeMesh = new THREE.Mesh(new THREE.SphereGeometry(2.75, 32, 24), bulgeMat);
+          tidalBulgeMesh.visible = state.showTides;
+          scene.add(tidalBulgeMesh);
+
+          // Earth Conical Umbra Shadow pointing along -X
+          const shadowGeo = new THREE.CylinderGeometry(1.15, 2.52, 16, 32, 1, true);
+          shadowGeo.rotateZ(Math.PI / 2); // align along X axis
+          const shadowMat = new THREE.MeshBasicMaterial({
+            color: 0x020617,
+            transparent: true,
+            opacity: 0.62,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+          shadowCone = new THREE.Mesh(shadowGeo, shadowMat);
+          shadowCone.position.set(-8.0, 0, 0);
+          shadowCone.visible = state.showShadow;
+          scene.add(shadowCone);
+
+          // Ecliptic Reference Plane Ring (flat Y = 0)
+          const eclGeo = new THREE.RingGeometry(ORBIT_RADIUS - 0.05, ORBIT_RADIUS + 0.05, 96);
+          eclGeo.rotateX(-Math.PI / 2);
+          eclipticRing = new THREE.Mesh(eclGeo, new THREE.MeshBasicMaterial({ color: 0x475569, side: THREE.DoubleSide, transparent: true, opacity: 0.5 }));
+          scene.add(eclipticRing);
+
+          // Moon's Actual Orbit Ring (tilted when showTilt is ON)
+          const orbPoints = [];
+          for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            orbPoints.push(new THREE.Vector3(ORBIT_RADIUS * Math.cos(a), 0, -ORBIT_RADIUS * Math.sin(a)));
+          }
+          const orbGeo = new THREE.BufferGeometry().setFromPoints(orbPoints);
+          orbitRing = new THREE.Line(orbGeo, new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 }));
+          scene.add(orbitRing);
+
+          // Orbital Nodes Markers (at 90° and 270° where tilted orbit crosses ecliptic)
+          nodesGroup = new THREE.Group();
+          const nodeMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+          const node1 = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), nodeMat);
+          node1.position.set(0, 0, -ORBIT_RADIUS);
+          const node2 = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), nodeMat);
+          node2.position.set(0, 0, ORBIT_RADIUS);
+          nodesGroup.add(node1, node2);
+          scene.add(nodesGroup);
+
+          // Parallel Sunlight Rays from +X
+          sunRaysGroup = new THREE.Group();
+          const rayMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.45 });
+          [-7, -3.5, 0, 3.5, 7].forEach(function (zOff) {
+            const pts = [new THREE.Vector3(24, 0, zOff), new THREE.Vector3(14.5, 0, zOff)];
+            const g = new THREE.BufferGeometry().setFromPoints(pts);
+            sunRaysGroup.add(new THREE.Line(g, rayMat));
+            const cone = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.7, 10), new THREE.MeshBasicMaterial({ color: 0xfbbf24 }));
+            cone.rotation.z = Math.PI / 2;
+            cone.position.set(14.5, 0, zOff);
+            sunRaysGroup.add(cone);
+          });
+          scene.add(sunRaysGroup);
+
+          // Moon Group (Moon + Tidal Lock Near-Side Flag)
+          moonGroup = new THREE.Group();
+          const moonTex = new THREE.CanvasTexture(createMoonTexture());
+          const moonMat = new THREE.MeshPhongMaterial({ map: moonTex, shininess: 4 });
+          moonMesh = new THREE.Mesh(new THREE.SphereGeometry(0.95, 36, 24), moonMat);
+          moonGroup.add(moonMesh);
+
+          // Near-Side Flag / Tidal Lock Marker on local -X (always points to Earth when rotation.y = rad)
+          tidalFlagGroup = new THREE.Group();
+          const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.04, 0.04, 0.85, 8),
+            new THREE.MeshBasicMaterial({ color: 0xfef08a })
+          );
+          pole.rotation.z = Math.PI / 2;
+          pole.position.set(-1.32, 0, 0);
+          const tip = new THREE.Mesh(
+            new THREE.ConeGeometry(0.18, 0.42, 12),
+            new THREE.MeshBasicMaterial({ color: 0xef4444 })
+          );
+          tip.rotation.z = Math.PI / 2;
+          tip.position.set(-1.82, 0, 0);
+          tidalFlagGroup.add(pole, tip);
+          moonGroup.add(tidalFlagGroup);
+
+          scene.add(moonGroup);
+          useWebGL = true;
+          update3DSceneGeometry();
+        } catch (err) {
+          // Graceful 2.5D canvas fallback if WebGL is unavailable
+          useWebGL = false;
+          fallbackCanvas = document.createElement('canvas');
+          fallbackCanvas.style.width = '100%';
+          fallbackCanvas.style.height = '100%';
+          fallbackCanvas.style.display = 'block';
+          viewportEl.insertBefore(fallbackCanvas, viewportEl.firstChild);
+          fallbackCtx = fallbackCanvas.getContext('2d');
+          resizeViewport();
+        }
+      }
+
+      function update3DSceneGeometry() {
+        const rad = (state.angleDeg * Math.PI) / 180;
+        const tilt = state.showTilt ? VISUAL_TILT_RAD : 0;
+
+        if (useWebGL && moonGroup) {
+          const mx = ORBIT_RADIUS * Math.cos(rad);
+          const mz = -ORBIT_RADIUS * Math.sin(rad);
+          const my = ORBIT_RADIUS * Math.sin(tilt) * Math.cos(rad);
+          moonGroup.position.set(mx, my, mz);
+          // Synchronous rotation (Tidal Locking): local -X always points to Earth
+          moonGroup.rotation.y = rad;
+
+          // Update orbit ring tilt
+          orbitRing.rotation.z = state.showTilt ? VISUAL_TILT_RAD : 0;
+          nodesGroup.visible = state.showTilt;
+          eclipticRing.visible = state.showTilt;
+          shadowCone.visible = state.showShadow;
+          tidalFlagGroup.visible = state.showTidalLock;
+          sunRaysGroup.visible = state.showSunRays;
+          tidalBulgeMesh.visible = state.showTides;
+
+          // Scale & orient Tidal Bulge along Earth-Moon line
+          if (state.showTides) {
+            const alignment = Math.abs(Math.cos(rad)); // 1 at New/Full (Spring), 0 at Quarters (Neap)
+            const stretch = 1.12 + alignment * 0.24;
+            tidalBulgeMesh.scale.set(stretch, 0.96, 0.96);
+            tidalBulgeMesh.rotation.y = rad;
+          }
+        }
+      }
+
+      function renderFallback25D() {
+        if (!fallbackCtx || !fallbackCanvas) return;
+        const w = fallbackCanvas.width;
+        const h = fallbackCanvas.height;
+        const ctx = fallbackCtx;
+        ctx.clearRect(0, 0, w, h);
+
+        const cx = w * 0.46;
+        const cy = h * 0.52;
+        const rx = Math.min(w, h) * 0.34;
+        const ry = rx * (state.cameraPreset === 'top' ? 0.92 : state.cameraPreset === 'side' ? 0.16 : 0.46);
+        const rad = (state.angleDeg * Math.PI) / 180;
+
+        // Stars
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        for (let i = 0; i < 60; i++) {
+          ctx.fillRect((i * 97) % w, (i * 53) % h, 1.5, 1.5);
+        }
+
+        // Sunlight arrows
+        if (state.showSunRays) {
+          ctx.strokeStyle = 'rgba(251,191,36,0.5)';
+          ctx.lineWidth = 2;
+          [-70, 0, 70].forEach(function (dy) {
+            ctx.beginPath();
+            ctx.moveTo(w - 25, cy + dy);
+            ctx.lineTo(w - 95, cy + dy);
+            ctx.stroke();
+          });
+        }
+
+        // Shadow cone
+        if (state.showShadow) {
+          ctx.fillStyle = 'rgba(2,6,23,0.65)';
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - 30);
+          ctx.lineTo(cx - rx * 1.3, cy - 16);
+          ctx.lineTo(cx - rx * 1.3, cy + 16);
+          ctx.lineTo(cx, cy + 30);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Orbit ellipse
+        ctx.strokeStyle = 'rgba(56,189,248,0.75)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Earth
+        ctx.fillStyle = '#1d4ed8';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(15,23,42,0.55)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32, Math.PI / 2, (3 * Math.PI) / 2);
+        ctx.fill();
+
+        // Moon position
+        const tiltOffset = state.showTilt ? -Math.cos(rad) * 26 : 0;
+        const mx = cx + rx * Math.cos(rad);
+        const my = cy - ry * Math.sin(rad) + tiltOffset;
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(mx, my, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(mx, my, 13, Math.PI / 2, (3 * Math.PI) / 2);
+        ctx.fill();
+
+        if (state.showTidalLock) {
+          const angToEarth = Math.atan2(cy - my, cx - mx);
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(mx, my);
+          ctx.lineTo(mx + Math.cos(angToEarth) * 24, my + Math.sin(angToEarth) * 24);
+          ctx.stroke();
+        }
+      }
+
+      function applyCameraPreset(preset) {
+        state.cameraPreset = preset;
+        camSpherical.lookAtMoon = false;
+        if (preset === 'iso') {
+          camSpherical.targetTheta = 0.62;
+          camSpherical.targetPhi = 1.05;
+          camSpherical.targetRadius = 26;
+        } else if (preset === 'top') {
+          camSpherical.targetTheta = 0.0;
+          camSpherical.targetPhi = 0.08;
+          camSpherical.targetRadius = 28;
+        } else if (preset === 'side') {
+          camSpherical.targetTheta = 1.57;
+          camSpherical.targetPhi = 1.54;
+          camSpherical.targetRadius = 25;
+        } else if (preset === 'earth') {
+          camSpherical.targetTheta = 0.8;
+          camSpherical.targetPhi = 1.2;
+          camSpherical.targetRadius = 15;
+          camSpherical.lookAtMoon = true;
+        }
+        document.querySelectorAll('.cam-btn').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-cam') === preset);
+        });
+      }
+
+      // Pointer drag & wheel zoom on 3D viewport
+      let isDragging = false;
+      let lastX = 0, lastY = 0;
+      viewportEl.addEventListener('pointerdown', function (e) {
+        if (e.target.closest('button')) return;
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        viewportEl.setPointerCapture(e.pointerId);
+      });
+      viewportEl.addEventListener('pointermove', function (e) {
+        if (!isDragging) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        camSpherical.targetTheta -= dx * 0.007;
+        camSpherical.targetPhi = Math.max(0.08, Math.min(Math.PI - 0.12, camSpherical.targetPhi - dy * 0.007));
+      });
+      viewportEl.addEventListener('pointerup', function () { isDragging = false; });
+      viewportEl.addEventListener('pointercancel', function () { isDragging = false; });
+      viewportEl.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        camSpherical.targetRadius = Math.max(11, Math.min(48, camSpherical.targetRadius + e.deltaY * 0.02));
+      }, { passive: false });
+
+      // =========================================================================
+      // 5. EARTH-OBSERVER PHASE DISC RENDERER (NORTHERN HEMISPHERE / THAILAND)
+      // =========================================================================
+      const phaseCanvas = document.getElementById('phaseCanvas');
+      const phaseCtx = phaseCanvas.getContext('2d');
+
+      function drawPhaseDisc(angleDeg) {
+        const ctx = phaseCtx;
+        const w = phaseCanvas.width;
+        const h = phaseCanvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const r = 74;
+        const rad = ((angleDeg % 360) * Math.PI) / 180;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Subtle outer glow proportional to illumination
+        const illum = (1 - Math.cos(rad)) / 2;
+        const glow = ctx.createRadialGradient(cx, cy, r * 0.85, cx, cy, r * 1.18);
+        glow.addColorStop(0, 'rgba(253, 230, 138,' + (0.12 + illum * 0.35).toFixed(2) + ')');
+        glow.addColorStop(1, 'rgba(8, 16, 32, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 1.18, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dark lunar base circle
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = '#182135';
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+        // Lit lunar hemisphere geometry
+        const isWaxing = angleDeg % 360 <= 180;
+        const cosA = Math.cos(rad);
+        const rx = Math.abs(cosA) * r;
+
+        ctx.fillStyle = '#f8f4e6';
+        ctx.beginPath();
+        if (isWaxing) {
+          // Right semicircle lit
+          ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+        } else {
+          // Left semicircle lit
+          ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
+        }
+        ctx.fill();
+
+        // Terminator ellipse
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, Math.max(0.5, rx), r, 0, 0, Math.PI * 2);
+        if ((isWaxing && cosA > 0) || (!isWaxing && cosA > 0)) {
+          // Crescent: cover inner ellipse with dark
+          ctx.fillStyle = '#182135';
+        } else {
+          // Gibbous: extend lit area over inner ellipse
+          ctx.fillStyle = '#f8f4e6';
+        }
+        ctx.fill();
+
+        // Subtle maria texture overlay inside the lunar disc
+        ctx.fillStyle = 'rgba(100, 116, 139, 0.22)';
+        const craters = [
+          [-24, -18, 18, 14], [14, -22, 16, 12], [-8, 10, 22, 15],
+          [26, 16, 14, 11], [-32, 20, 12, 10], [4, -4, 10, 9]
+        ];
+        craters.forEach(function (cr) {
+          ctx.beginPath();
+          ctx.ellipse(cx + cr[0], cy + cr[1], cr[2], cr[3], 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+
+        // Crisp rim border
+        ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // =========================================================================
+      // 6. SIDEREAL VS. SYNODIC HELIOCENTRIC CANVAS (TAB 2)
+      // =========================================================================
+      const siderealCanvas = document.getElementById('siderealCanvas');
+      const siderealCtx = siderealCanvas.getContext('2d');
+
+      function drawSiderealCanvas() {
+        const ctx = siderealCtx;
+        const w = siderealCanvas.width;
+        const h = siderealCanvas.height;
+        const day = state.siderealDay;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#070e1d';
+        ctx.fillRect(0, 0, w, h);
+
+        // Distant fixed star rays (horizontal rightwards reference)
+        ctx.strokeStyle = 'rgba(148,163,184,0.22)';
+        ctx.setLineDash([4, 4]);
+        for (let y = 35; y < h; y += 55) {
+          ctx.beginPath();
+          ctx.moveTo(40, y);
+          ctx.lineTo(w - 20, y);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px "Times New Roman", serif';
+        ctx.fillText('Direction to Distant Fixed Stars →', w - 190, 22);
+
+        // Sun on left
+        const sunX = 75, sunY = h * 0.56;
+        const sunGrad = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 38);
+        sunGrad.addColorStop(0, '#fef08a');
+        sunGrad.addColorStop(0.6, '#f59e0b');
+        sunGrad.addColorStop(1, 'rgba(245,158,11,0)');
+        ctx.fillStyle = sunGrad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 12px "Times New Roman", serif';
+        ctx.fillText('SUN', sunX - 13, sunY + 46);
+
+        // Earth's curved orbital arc around Sun
+        const earthOrbitR = 340;
+        ctx.strokeStyle = 'rgba(56,189,248,0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, earthOrbitR, -0.58, 0.14);
+        ctx.stroke();
+
+        // Day 0 Earth position (angle = 0)
+        const e0x = sunX + earthOrbitR;
+        const e0y = sunY;
+        ctx.fillStyle = 'rgba(59,130,246,0.35)';
+        ctx.beginPath();
+        ctx.arc(e0x, e0y, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#93c5fd';
+        ctx.font = '11px "Times New Roman", serif';
+        ctx.fillText('Earth (Day 0)', e0x - 32, e0y + 28);
+
+        // Current Earth position: ~0.9856° per day -> ~26.9° at 27.32 d, ~29.1° at 29.53 d
+        const earthAngleRad = -(day * 0.9856 * Math.PI) / 180; // CCW upward
+        const ex = sunX + earthOrbitR * Math.cos(earthAngleRad);
+        const ey = sunY + earthOrbitR * Math.sin(earthAngleRad);
+
+        // Sun-to-Earth alignment line (dashed gold)
+        ctx.strokeStyle = 'rgba(245,158,11,0.55)';
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sunX, sunY);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Moon's orbit around current Earth
+        const mR = 52;
+        ctx.strokeStyle = 'rgba(148,163,184,0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(ex, ey, mR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Earth sphere
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath();
+        ctx.arc(ex, ey, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px "Times New Roman", serif';
+        ctx.fillText('Earth', ex - 13, ey + 28);
+
+        // Moon angle relative to fixed stars: starts at PI (between Sun and Earth at Day 0)
+        // Completes 2*PI in 27.32 days (CCW = negative canvas angle)
+        const moonStarAngle = Math.PI - (day / SIDEREAL_MONTH) * Math.PI * 2;
+        const mx = ex + mR * Math.cos(moonStarAngle);
+        const my = ey + mR * Math.sin(moonStarAngle);
+
+        // Reference line to fixed star (-X from Earth)
+        ctx.strokeStyle = 'rgba(56,189,248,0.6)';
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(ex - mR - 14, ey);
+        ctx.stroke();
+
+        // Moon sphere
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(mx, my, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Status callout on canvas
+        ctx.fillStyle = '#fde68a';
+        ctx.font = 'bold 13px "Times New Roman", serif';
+        if (Math.abs(day - 27.32) < 0.35) {
+          ctx.fillText('Day 27.32: Sidereal 360° done, but NOT yet aligned with Sun!', 20, 295);
+        } else if (day >= 29.2) {
+          ctx.fillText('Day 29.53: Synodic Month complete — New Moon re-aligned with Sun!', 20, 295);
+        } else {
+          ctx.fillText('Earth moves ~1°/day around Sun; Moon completes 360° in 27.32 d.', 20, 295);
+        }
+        document.getElementById('siderealDayLabel').textContent = 'Day ' + day.toFixed(2);
+      }
+
+      // =========================================================================
+      // 7. PHASE CALCULATION, CLOCK & UI SYNCHRONIZATION
+      // =========================================================================
+      function getClosestPhase(angleDeg) {
+        const norm = ((angleDeg % 360) + 360) % 360;
+        let best = PHASES[0];
+        let minDiff = 999;
+        PHASES.forEach(function (p) {
+          let d = Math.abs(norm - p.angle);
+          if (d > 180) d = 360 - d;
+          if (d < minDiff) {
+            minDiff = d;
+            best = p;
+          }
+        });
+        return best;
+      }
+
+      function formatClock(hoursFloat) {
+        let h = ((hoursFloat % 24) + 24) % 24;
+        const hh = Math.floor(h);
+        const mm = Math.round((h - hh) * 60);
+        const finalH = mm === 60 ? (hh + 1) % 24 : hh;
+        const finalM = mm === 60 ? 0 : mm;
+        return String(finalH).padStart(2, '0') + ':' + String(finalM).padStart(2, '0');
+      }
+
+      function getThaiLunarLabel(dayFloat) {
+        const d = Math.round(dayFloat);
+        if (d === 0 || d >= 30) return 'แรม 15 ค่ำ (วันเดือนดับ)';
+        if (d <= 15) return 'ขึ้น ' + d + ' ค่ำ' + (d === 8 || d === 15 ? ' (วันพระ)' : '');
+        const waning = d - 15;
+        return 'แรม ' + waning + ' ค่ำ' + (waning === 8 || waning === 15 ? ' (วันพระ)' : '');
+      }
+
+      function syncAllControls() {
+        const norm = ((state.angleDeg % 360) + 360) % 360;
+        const day = (norm / 360) * SYNODIC_MONTH;
+        const rad = (norm * Math.PI) / 180;
+        const illumPct = ((1 - Math.cos(rad)) / 2) * 100;
+        const phase = getClosestPhase(norm);
+
+        // Rise/Transit/Set continuous calculation (New Moon rises 06:00, shifts +24h over 360°)
+        const riseHr = 6 + (norm / 360) * 24;
+        const transitHr = riseHr + 6;
+        const setHr = riseHr + 12;
+
+        // HUD & Readouts
+        document.getElementById('hudPhaseTitle').textContent = phase.en + ' — ' + phase.th;
+        document.getElementById('hudOrbitStats').textContent =
+          'Day ' + day.toFixed(1) + ' / ' + SYNODIC_MONTH + ' • Angle ' + norm.toFixed(0) + '° • Lit ' + illumPct.toFixed(0) + '%';
+        document.getElementById('scrubberReadout').textContent = 'Day ' + day.toFixed(2) + ' • ' + norm.toFixed(1) + '°';
+        document.getElementById('orbitSlider').value = norm.toFixed(1);
+
+        // Earth Observer Scope
+        document.getElementById('phaseNameEn').textContent = phase.en;
+        document.getElementById('phaseNameTh').textContent = phase.th;
+        document.getElementById('thaiLunarDate').textContent = getThaiLunarLabel(day);
+        document.getElementById('statIllum').textContent = illumPct.toFixed(1) + '%';
+        document.getElementById('statRise').textContent = formatClock(riseHr);
+        document.getElementById('statTransit').textContent = formatClock(transitHr);
+        document.getElementById('statSet').textContent = formatClock(setHr);
+        document.getElementById('phaseDescEn').textContent = phase.descEn;
+        document.getElementById('phaseDescTh').textContent = phase.descTh;
+
+        // Waxing / Waning indicator
+        const waxEl = document.getElementById('waxWaneTag');
+        if (norm < 12 || norm > 348) waxEl.textContent = 'NEW MOON (จันทร์ดับ)';
+        else if (Math.abs(norm - 180) < 12) waxEl.textContent = 'FULL MOON (วันเพ็ญ)';
+        else if (norm < 180) waxEl.textContent = 'WAXING (ข้างขึ้น • ขวาสว่าง)';
+        else waxEl.textContent = 'WANING (ข้างแรม • ซ้ายสว่าง)';
+
+        // Wan Phra badge
+        const dRound = Math.round(day);
+        const isWanPhra = dRound === 0 || dRound === 8 || dRound === 15 || dRound === 23 || dRound >= 29;
+        document.getElementById('wanPhraBadge').classList.toggle('hidden', !isWanPhra);
+
+        // Tidal regime
+        const align = Math.abs(Math.cos(rad));
+        const tideEl = document.getElementById('statTide');
+        if (align > 0.85) {
+          tideEl.textContent = 'Spring Tide (น้ำเกิด)';
+          tideEl.className = 'text-sm font-bold text-rose-700';
+        } else if (align < 0.35) {
+          tideEl.textContent = 'Neap Tide (น้ำตาย)';
+          tideEl.className = 'text-sm font-bold text-sky-700';
+        } else {
+          tideEl.textContent = 'Moderate Tide (ปานกลาง)';
+          tideEl.className = 'text-sm font-bold text-emerald-800';
+        }
+
+        // Play/Pause button state
+        document.getElementById('playIcon').innerHTML = state.isPlaying ? '&#10074;&#10074;' : '&#9654;';
+        document.getElementById('playLabel').textContent = state.isPlaying ? 'Pause' : 'Play';
+        document.getElementById('speedVal').textContent = state.speed.toFixed(2) + '×';
+        document.getElementById('speedRange').value = state.speed;
+
+        // Tilt HUD badge
+        document.getElementById('hudTiltBadge').textContent = state.showTilt
+          ? '5.145° Inclined Orbit Active (2× visual scale)'
+          : 'Flat Ecliptic Plane (Node / Eclipse Alignment)';
+
+        // Highlight active phase preset button
+        document.querySelectorAll('.phase-btn').forEach(function (btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-phase') === phase.id);
+        });
+
+        // Layer Toggle Pill styles
+        syncTogglePill('toggleTilt', state.showTilt);
+        syncTogglePill('toggleShadow', state.showShadow);
+        syncTogglePill('toggleTidalLock', state.showTidalLock);
+        syncTogglePill('toggleSunRays', state.showSunRays);
+        syncTogglePill('toggleTides', state.showTides);
+
+        drawPhaseDisc(norm);
+        update3DSceneGeometry();
+      }
+
+      function syncTogglePill(id, isOn) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('on', isOn);
+        const dot = el.querySelector('.status-dot');
+        if (dot) {
+          dot.textContent = isOn ? 'ON' : 'OFF';
+          dot.className = isOn
+            ? 'status-dot text-[10px] px-1.5 py-0.5 rounded bg-[#1b365d] text-white'
+            : 'status-dot text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700';
+        }
+      }
+
+      // =========================================================================
+      // 8. BUILD DYNAMIC UI COMPONENTS (PHASE GRID, MISCONCEPTIONS, GLOSSARY, QUIZ)
+      // =========================================================================
+      function buildPhaseGrid() {
+        const grid = document.getElementById('phaseGrid');
+        grid.innerHTML = '';
+        PHASES.forEach(function (p) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'phase-btn p-2 rounded-lg border border-slate-300 bg-white hover:border-[#1b365d] text-left';
+          btn.setAttribute('data-phase', p.id);
+          btn.innerHTML =
+            '<div class="font-bold text-xs leading-tight en-only">' + p.en + '</div>' +
+            '<div class="font-bold text-xs leading-tight th-only">' + p.th + '</div>' +
+            '<div class="phase-sub text-[10px] text-slate-500 mt-0.5">' + p.angle + '° &bull; ' + p.thaiDate.split(' ')[0] + ' ' + (p.thaiDate.split(' ')[1] || '') + '</div>';
+          btn.addEventListener('click', function () {
+            state.isPlaying = false;
+            state.angleDeg = p.angle;
+            syncAllControls();
+          });
+          grid.appendChild(btn);
+        });
+      }
+
+      function buildMisconceptions() {
+        const grid = document.getElementById('misconceptionGrid');
+        grid.innerHTML = '';
+        MISCONCEPTIONS.forEach(function (m, idx) {
+          const card = document.createElement('div');
+          card.className = 'border border-slate-200 rounded-xl p-3.5 bg-slate-50 flex flex-col justify-between gap-2.5';
+          card.innerHTML =
+            '<div>' +
+              '<div class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 rounded px-2 py-1 mb-2">' +
+                '<div class="en-only">' + m.mythEn + '</div>' +
+                '<div class="th-only">' + m.mythTh + '</div>' +
+              '</div>' +
+              '<p class="text-xs text-slate-800 en-only"><strong>Scientific Evidence:</strong> ' + m.factEn + '</p>' +
+              '<p class="text-xs text-slate-700 mt-1 th-only"><strong>คำอธิบายทางวิทยาศาสตร์:</strong> ' + m.factTh + '</p>' +
+            '</div>' +
+            '<button type="button" data-midx="' + idx + '" class="demo-btn w-full py-1.5 px-3 rounded-lg bg-[#1b365d] hover:bg-[#132744] text-white text-xs font-bold transition">' +
+              m.demoLabel +
+            '</button>';
+          grid.appendChild(card);
+        });
+        grid.querySelectorAll('.demo-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const i = parseInt(btn.getAttribute('data-midx'), 10);
+            MISCONCEPTIONS[i].demoAction();
+          });
+        });
+      }
+
+      function renderGlossary(filterText) {
+        const tbody = document.getElementById('glossaryBody');
+        const q = (filterText || '').trim().toLowerCase();
+        tbody.innerHTML = '';
+        const rows = GLOSSARY.filter(function (g) {
+          return !q || g.en.toLowerCase().includes(q) || g.th.toLowerCase().includes(q) || g.def.toLowerCase().includes(q);
+        });
+        if (rows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="py-3 px-3 text-center text-slate-500">No matching astronomy terms found.</td></tr>';
+          return;
+        }
+        rows.forEach(function (g) {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-amber-50/40';
+          tr.innerHTML =
+            '<td class="py-2 px-3 font-bold text-[#1b365d]">' + g.en + '</td>' +
+            '<td class="py-2 px-3 font-semibold text-amber-900">' + g.th + '</td>' +
+            '<td class="py-2 px-3 text-slate-700">' + g.def + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function buildQuiz() {
+        const container = document.getElementById('quizContainer');
+        container.innerHTML = '';
+        QUIZ_ITEMS.forEach(function (item, qIdx) {
+          const card = document.createElement('div');
+          card.className = 'border border-slate-200 rounded-xl p-3.5 bg-white space-y-2';
+          let optionsHtml = '';
+          item.options.forEach(function (opt, oIdx) {
+            const chosen = state.quizAnswers[qIdx] === oIdx;
+            let optStyle = 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800';
+            if (state.quizSubmitted) {
+              if (oIdx === item.correct) optStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold';
+              else if (chosen && oIdx !== item.correct) optStyle = 'border-rose-500 bg-rose-50 text-rose-900';
+            } else if (chosen) {
+              optStyle = 'border-[#1b365d] bg-blue-50 text-[#1b365d] font-bold';
+            }
+            optionsHtml +=
+              '<button type="button" data-q="' + qIdx + '" data-o="' + oIdx + '" class="quiz-opt w-full text-left px-3 py-2 rounded-lg border text-xs sm:text-sm transition ' + optStyle + '">' +
+                opt +
+              '</button>';
+          });
+
+          const feedbackHtml = state.quizSubmitted
+            ? '<div class="text-xs p-2.5 rounded-lg ' +
+                (state.quizAnswers[qIdx] === item.correct ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') +
+              '"><strong>Explanation:</strong> ' + item.exp + '</div>'
+            : '';
+
+          card.innerHTML =
+            '<div class="flex items-start justify-between gap-2">' +
+              '<div>' +
+                '<div class="font-bold text-sm text-[#1b365d] en-only">' + item.qEn + '</div>' +
+                '<div class="font-semibold text-xs text-slate-700 th-only mt-0.5">' + item.qTh + '</div>' +
+              '</div>' +
+              '<span class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-slate-700">Bloom: ' + item.bloom + '</span>' +
+            '</div>' +
+            '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' + optionsHtml + '</div>' +
+            feedbackHtml;
+          container.appendChild(card);
+        });
+
+        container.querySelectorAll('.quiz-opt').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            if (state.quizSubmitted) return;
+            const q = parseInt(btn.getAttribute('data-q'), 10);
+            const o = parseInt(btn.getAttribute('data-o'), 10);
+            state.quizAnswers[q] = o;
+            buildQuiz();
+          });
+        });
+
+        // Update score badge
+        let score = 0;
+        if (state.quizSubmitted) {
+          QUIZ_ITEMS.forEach(function (item, idx) {
+            if (state.quizAnswers[idx] === item.correct) score++;
+          });
+        }
+        document.getElementById('quizScoreBadge').textContent = 'Score: ' + score + ' / ' + QUIZ_ITEMS.length;
+      }
+
+      function exportWordReport() {
+        const studentName = (document.getElementById('studentNameInput').value || 'SMBP Grade 9 Student').trim();
+        let score = 0;
+        let rowsHtml = '';
+        QUIZ_ITEMS.forEach(function (item, idx) {
+          const sel = state.quizAnswers[idx];
+          const isRight = sel === item.correct;
+          if (isRight) score++;
+          rowsHtml +=
+            '<tr>' +
+              '<td style="border:1px solid #999;padding:6px;">' + (idx + 1) + ' (' + item.bloom + ')</td>' +
+              '<td style="border:1px solid #999;padding:6px;">' + item.qEn + '</td>' +
+              '<td style="border:1px solid #999;padding:6px;">' + (sel !== undefined ? item.options[sel] : 'Unanswered') + '</td>' +
+              '<td style="border:1px solid #999;padding:6px;font-weight:bold;color:' + (isRight ? '#166534' : '#991b1b') + ';">' + (isRight ? 'Correct' : 'Incorrect') + '</td>' +
+            '</tr>';
+        });
+        const pct = Math.round((score / QUIZ_ITEMS.length) * 100);
+        const docHtml =
+          '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+          '<head><meta charset="utf-8"><title>Lunar Cycle Assessment Report</title></head>' +
+          '<body style="font-family:Times New Roman,serif;font-size:11pt;color:#111;">' +
+            '<h2 style="color:#1b365d;margin-bottom:4px;">Chalermkwansatree School &mdash; SMBP Grade 9 Science (ว 3.1 ม.3/3)</h2>' +
+            '<p style="margin-top:0;"><strong>Topic:</strong> Lunar Cycle Phases &amp; Orbital Revolution 3D Laboratory<br>' +
+            '<strong>Student:</strong> ' + studentName + ' &nbsp;|&nbsp; <strong>Score:</strong> ' + score + ' / ' + QUIZ_ITEMS.length + ' (' + pct + '%)</p>' +
+            '<table style="border-collapse:collapse;width:100%;font-size:10pt;">' +
+              '<tr style="background:#1b365d;color:#fff;"><th style="border:1px solid #999;padding:6px;">Item</th><th style="border:1px solid #999;padding:6px;">Question</th><th style="border:1px solid #999;padding:6px;">Student Answer</th><th style="border:1px solid #999;padding:6px;">Result</th></tr>' +
+              rowsHtml +
+            '</table>' +
+          '</body></html>';
+
+        const blob = new Blob(['\ufeff', docHtml], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Lunar_Cycle_Grade9_Report_' + studentName.replace(/\s+/g, '_') + '.doc';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Academic Word Report (.doc) downloaded for ' + studentName + '!');
+      }
+
+      // =========================================================================
+      // 9. TABS, LANGUAGE, CONTROLS & TOAST
+      // =========================================================================
+      let toastTimer = null;
+      function showToast(msg) {
+        const box = document.getElementById('toastBox');
+        box.textContent = msg;
+        box.classList.remove('opacity-0', 'translate-y-2');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          box.classList.add('opacity-0', 'translate-y-2');
+        }, 3800);
+      }
+
+      function switchTab(tabId) {
+        state.activeTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+        });
+        document.querySelectorAll('.tab-panel').forEach(function (p) {
+          p.classList.toggle('hidden', p.id !== 'tab-' + tabId);
+        });
+        if (tabId === 'sidereal') drawSiderealCanvas();
+      }
+
+      function setLanguage(mode) {
+        state.lang = mode;
+        document.body.classList.remove('lang-bilingual', 'lang-en', 'lang-th');
+        document.body.classList.add('lang-' + mode);
+        const map = { bilingual: 'langBilingual', en: 'langEn', th: 'langTh' };
+        Object.keys(map).forEach(function (k) {
+          const btn = document.getElementById(map[k]);
+          if (k === mode) {
+            btn.className = 'px-2.5 py-1 text-xs sm:text-sm rounded-md font-bold bg-[#f59e0b] text-[#0b162c] transition';
+          } else {
+            btn.className = 'px-2.5 py-1 text-xs sm:text-sm rounded-md font-semibold text-slate-200 hover:bg-slate-700 transition';
+          }
+        });
+      }
+
+      // Event Wiring
+      document.getElementById('langBilingual').addEventListener('click', function () { setLanguage('bilingual'); });
+      document.getElementById('langEn').addEventListener('click', function () { setLanguage('en'); });
+      document.getElementById('langTh').addEventListener('click', function () { setLanguage('th'); });
+
+      document.querySelectorAll('.tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      document.querySelectorAll('.cam-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          applyCameraPreset(btn.getAttribute('data-cam'));
+        });
+      });
+
+      document.getElementById('btnZoomIn').addEventListener('click', function () {
+        camSpherical.targetRadius = Math.max(11, camSpherical.targetRadius - 4);
+      });
+      document.getElementById('btnZoomOut').addEventListener('click', function () {
+        camSpherical.targetRadius = Math.min(48, camSpherical.targetRadius + 4);
+      });
+      document.getElementById('btnResetCam').addEventListener('click', function () {
+        applyCameraPreset('iso');
+      });
+
+      document.getElementById('btnPlayPause').addEventListener('click', function () {
+        state.isPlaying = !state.isPlaying;
+        syncAllControls();
+      });
+      document.getElementById('btnStepBack').addEventListener('click', function () {
+        state.isPlaying = false;
+        state.angleDeg = (state.angleDeg - (360 / SYNODIC_MONTH) + 360) % 360;
+        syncAllControls();
+      });
+      document.getElementById('btnStepFwd').addEventListener('click', function () {
+        state.isPlaying = false;
+        state.angleDeg = (state.angleDeg + (360 / SYNODIC_MONTH)) % 360;
+        syncAllControls();
+      });
+      document.getElementById('speedRange').addEventListener('input', function (e) {
+        state.speed = parseFloat(e.target.value) || 1;
+        syncAllControls();
+      });
+      document.getElementById('orbitSlider').addEventListener('input', function (e) {
+        state.isPlaying = false;
+        state.angleDeg = parseFloat(e.target.value) || 0;
+        syncAllControls();
+      });
+
+      document.getElementById('toggleTilt').addEventListener('click', function () {
+        state.showTilt = !state.showTilt;
+        syncAllControls();
+      });
+      document.getElementById('toggleShadow').addEventListener('click', function () {
+        state.showShadow = !state.showShadow;
+        syncAllControls();
+      });
+      document.getElementById('toggleTidalLock').addEventListener('click', function () {
+        state.showTidalLock = !state.showTidalLock;
+        syncAllControls();
+      });
+      document.getElementById('toggleSunRays').addEventListener('click', function () {
+        state.showSunRays = !state.showSunRays;
+        syncAllControls();
+      });
+      document.getElementById('toggleTides').addEventListener('click', function () {
+        state.showTides = !state.showTides;
+        syncAllControls();
+      });
+
+      document.getElementById('siderealSlider').addEventListener('input', function (e) {
+        state.siderealDay = parseFloat(e.target.value) || 0;
+        drawSiderealCanvas();
+      });
+      document.querySelectorAll('.sday-preset').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.siderealDay = parseFloat(btn.getAttribute('data-sday'));
+          document.getElementById('siderealSlider').value = String(state.siderealDay);
+          drawSiderealCanvas();
+        });
+      });
+
+      document.getElementById('glossarySearch').addEventListener('input', function (e) {
+        renderGlossary(e.target.value);
+      });
+
+      document.getElementById('btnSubmitQuiz').addEventListener('click', function () {
+        state.quizSubmitted = true;
+        buildQuiz();
+        showToast('Quiz graded! Review the Bloom-tagged explanations below or download the Word report.');
+      });
+      document.getElementById('btnResetQuiz').addEventListener('click', function () {
+        state.quizAnswers = {};
+        state.quizSubmitted = false;
+        buildQuiz();
+      });
+      document.getElementById('btnExportReport').addEventListener('click', exportWordReport);
+
+      // Keyboard shortcut: Spacebar to play/pause (when not typing in an input)
+      window.addEventListener('keydown', function (e) {
+        if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+          e.preventDefault();
+          state.isPlaying = !state.isPlaying;
+          syncAllControls();
+        }
+      });
+
+      // =========================================================================
+      // 10. ANIMATION LOOP & RESPONSIVE RESIZE
+      // =========================================================================
+      function resizeViewport() {
+        const w = viewportEl.clientWidth || 720;
+        const h = viewportEl.clientHeight || 460;
+        if (useWebGL && renderer && camera) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        } else if (fallbackCanvas) {
+          fallbackCanvas.width = w;
+          fallbackCanvas.height = h;
+          renderFallback25D();
+        }
+      }
+      window.addEventListener('resize', resizeViewport);
+
+      let lastTs = 0;
+      function animate(ts) {
+        requestAnimationFrame(animate);
+        const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.1) : 0.016;
+        lastTs = ts;
+
+        if (state.isPlaying) {
+          state.angleDeg = (state.angleDeg + dt * 16 * state.speed) % 360;
+          syncAllControls();
+        }
+
+        if (useWebGL && renderer && scene && camera) {
+          // Continuous Earth diurnal rotation
+          if (earthMesh) earthMesh.rotation.y += dt * 0.45;
+
+          // Smooth camera interpolation
+          camSpherical.theta += (camSpherical.targetTheta - camSpherical.theta) * 0.1;
+          camSpherical.phi += (camSpherical.targetPhi - camSpherical.phi) * 0.1;
+          camSpherical.radius += (camSpherical.targetRadius - camSpherical.radius) * 0.1;
+
+          const r = camSpherical.radius;
+          const x = r * Math.sin(camSpherical.phi) * Math.sin(camSpherical.theta);
+          const y = r * Math.cos(camSpherical.phi);
+          const z = r * Math.sin(camSpherical.phi) * Math.cos(camSpherical.theta);
+
+          if (camSpherical.lookAtMoon && moonGroup) {
+            camera.position.set(moonGroup.position.x + x * 0.35, moonGroup.position.y + y * 0.35 + 1.2, moonGroup.position.z + z * 0.35);
+            camera.lookAt(moonGroup.position);
+          } else {
+            camera.position.set(x, y, z);
+            camera.lookAt(0, 0, 0);
+          }
+
+          renderer.render(scene, camera);
+        } else {
+          renderFallback25D();
+        }
+      }
+
+      // Initialize Everything
+      buildPhaseGrid();
+      buildMisconceptions();
+      renderGlossary('');
+      buildQuiz();
+      init3DEngine();
+      syncAllControls();
+      drawSiderealCanvas();
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
